@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>CAT 2026 Tracker</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CAT 2026">
+<meta name="theme-color" content="#0f0f13">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+:root{--bg:#0f0f13;--sf:#1a1a22;--sf2:#22222e;--bd:#2e2e3e;--ac:#7c6af7;--ac2:#4fc3a1;--ac3:#f7956a;--tx:#e8e6f0;--tx2:#9896a8;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+#LS{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.lbox{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:28px 24px;width:100%;max-width:340px;text-align:center;}
+.lbox h2{font-size:20px;margin-bottom:8px;}
+.lbox p{font-size:12px;color:var(--tx2);margin-bottom:22px;line-height:1.6;}
+.pin-row{display:flex;gap:12px;justify-content:center;margin-bottom:18px;}
+.pd{width:54px;height:62px;border:2px solid var(--bd);border-radius:12px;background:var(--sf2);color:var(--tx);font-size:26px;text-align:center;outline:none;transition:border-color 0.2s;}
+.pd:focus{border-color:var(--ac);}
+.ebtn{width:100%;padding:13px;border:none;border-radius:10px;background:var(--ac);color:#fff;font-size:14px;font-weight:600;cursor:pointer;}
+.errmsg{color:#e06060;font-size:12px;margin-top:10px;min-height:16px;}
+.hint{font-size:11px;color:var(--tx2);margin-top:12px;line-height:1.7;}
+.topbar{background:var(--sf);border-bottom:1px solid var(--bd);padding:10px 14px;position:sticky;top:0;z-index:100;}
+.tr1{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.topbar h1{font-size:14px;font-weight:600;flex:1;}
+.topbar h1 span{color:var(--ac);}
+.streak{background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--ac3);font-weight:600;}
+.synbtn{background:none;border:none;color:var(--tx2);font-size:20px;cursor:pointer;padding:2px 6px;}
+.pbar{height:3px;background:var(--bd);border-radius:2px;}
+.pbar-f{height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));border-radius:2px;transition:width .4s;}
+.tabs{display:flex;background:var(--sf);border-bottom:1px solid var(--bd);}
+.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--tx2);font-size:12px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;}
+.tab.active{color:var(--ac);border-bottom-color:var(--ac);background:var(--sf2);}
+.sbar{font-size:10px;text-align:center;padding:3px 8px;}
+.sbar.ok{background:#102218;color:var(--ac2);}
+.sbar.err{background:#1e1618;color:#e06060;}
+.sbar.loading{background:#1a1a2e;color:var(--tx2);}
+.main{padding:10px 12px;max-width:700px;margin:0 auto;padding-bottom:40px;}
+.wkhdr{display:flex;align-items:center;gap:8px;margin:14px 0 6px;}
+.wkl{font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;}
+.wkln{flex:1;height:1px;background:var(--bd);}
+.wksc{font-size:10px;color:var(--ac2);font-weight:600;background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:2px 8px;}
+.dc{background:var(--sf);border:1px solid var(--bd);border-radius:10px;margin-bottom:6px;overflow:hidden;}
+.dc.tod{border-color:var(--ac);}
+.dc.alldone{border-color:#4fc3a155;background:#102218;}
+.dc.mockday{border-color:#3a8a5a;background:#1a2a1e;}
+.dh{display:flex;align-items:center;gap:8px;padding:9px 11px;cursor:pointer;user-select:none;}
+.ddate{font-size:11px;font-weight:600;color:var(--tx2);min-width:88px;}
+.ddate.tl{color:var(--ac);}
+.tbadge{background:var(--ac);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;}
+.dprog{flex:1;display:flex;align-items:center;gap:6px;}
+.mbar{flex:1;height:3px;background:var(--bd);border-radius:2px;}
+.mbarf{height:100%;background:var(--ac2);border-radius:2px;transition:width .3s;}
+.dpct{font-size:10px;color:var(--tx2);min-width:26px;text-align:right;}
+.chv{color:var(--tx2);font-size:11px;transition:transform .2s;}
+.chv.open{transform:rotate(180deg);}
+.tasks{padding:0 11px 8px;display:none;}
+.tasks.open{display:block;}
+.trow{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-top:1px solid #2e2e3e44;}
+.trow:first-child{border-top:none;}
+.ck{width:22px;height:22px;border:2px solid var(--bd);border-radius:6px;cursor:pointer;flex-shrink:0;margin-top:1px;background:transparent;min-width:22px;display:flex;align-items:center;justify-content:center;}
+.ck.on{background:var(--ac2);border-color:var(--ac2);}
+.ck.on::after{content:'✓';color:#0f0f13;font-size:13px;font-weight:700;}
+.tbody{flex:1;min-width:0;}
+.sec{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-bottom:3px;}
+.sQA{background:#1e1a3a;color:#a09af7;}
+.sVARC{background:#101e2e;color:#60aee8;}
+.sDILR{background:#102218;color:#4fc3a1;}
+.sMOCK{background:#1a2a1e;color:#4fc3a1;}
+.ttop{font-size:12px;font-weight:500;color:var(--tx);display:block;}
+.tdesc{font-size:11px;color:var(--tx2);margin-top:1px;}
+.trow.done .ttop,.trow.done .tdesc{text-decoration:line-through;opacity:.45;}
+.today-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:12px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;}
+.today-pct{font-size:32px;font-weight:700;}
+.today-list{display:flex;flex-direction:column;gap:6px;}
+.tcard{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:10px;}
+.tcard.done{background:var(--sf2);opacity:.7;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+.stb{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:10px 6px;text-align:center;}
+.stv{font-size:20px;font-weight:700;color:var(--ac);}
+.stl{font-size:10px;color:var(--tx2);margin-top:2px;}
+.aw{background:var(--sf);border:1px solid var(--bd);border-radius:10px;margin-bottom:10px;padding:12px;}
+.awh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.awt{font-size:12px;font-weight:600;}
+.awsc{font-size:18px;font-weight:700;}
+.sg{color:var(--ac2);}.so{color:var(--ac3);}.sb{color:#e06060;}
+.awg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:10px;}
+.add{text-align:center;}
+.adl{font-size:9px;color:var(--tx2);margin-bottom:3px;}
+.adc{width:100%;aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;margin:0 auto;max-width:34px;}
+.df{background:var(--ac2);color:#0f0f13;}.dp2{background:var(--ac3);color:#0f0f13;}.dn2{background:var(--bd);color:var(--tx2);}.dfu{background:var(--sf2);color:var(--tx2);opacity:.3;}
+.awsecs{display:flex;gap:6px;flex-wrap:wrap;}
+.awsec{flex:1;min-width:60px;background:var(--sf2);border-radius:8px;padding:7px;text-align:center;}
+.awsl{font-size:10px;color:var(--tx2);margin-bottom:3px;}
+.awsv{font-size:15px;font-weight:700;color:var(--ac);}
+.vrow{padding:8px 0;border-top:1px solid #2e2e3e44;}
+.vrow:first-child{border-top:none;}
+.vinput{width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-size:12px;padding:8px 10px;margin-top:5px;font-family:inherit;}
+.vinput:focus{outline:none;border-color:var(--ac);}
+.vsaved{font-size:9px;color:var(--ac2);margin-left:6px;opacity:0;transition:opacity .3s;}
+.vsaved.show{opacity:1;}
+.trow.test,.tcard.test{align-items:stretch;flex-direction:column;}
+.tpart{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.tplabel{font-size:11px;color:var(--tx2);min-width:42px;}
+.tnum{width:52px;background:var(--sf2);border:1px solid var(--bd);border-radius:7px;color:var(--tx);font-size:12px;padding:6px 7px;text-align:center;font-family:inherit;}
+.tnum:focus{outline:none;border-color:var(--ac);}
+.tacc{font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;background:var(--sf2);color:var(--tx2);margin-left:auto;}
+.tacc.good{color:var(--ac2);}
+.tacc.mid{color:var(--ac3);}
+.tacc.low{color:#e06060;}
+.testblk{margin-top:2px;}
+.awh2{font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px;}
+.testlog{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:4px 12px;margin-bottom:6px;}
+.tlrow{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #2e2e3e44;font-size:11px;}
+.tlrow:first-child{border-top:none;}
+.tldate{color:var(--tx2);min-width:60px;}
+.tltopic{flex:1;color:var(--tx);}
+.tlacc{font-weight:700;}
+.vocablog{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:6px;font-size:12px;line-height:1.9;}
+.vlword{color:var(--tx2);}
+.vlword b{color:var(--tx);font-weight:600;}
+.emptymsg{font-size:11px;color:var(--tx2);padding:10px 0;text-align:center;}
+@media(max-width:380px){.stats{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+
+<div id="LS">
+  <div class="lbox">
+    <h2>📚 CAT 2026</h2>
+    <p>Enter your 4-digit PIN to sync across all devices</p>
+    <div class="pin-row">
+      <input class="pd" id="p0" maxlength="1" type="password" inputmode="numeric" autocomplete="off">
+      <input class="pd" id="p1" maxlength="1" type="password" inputmode="numeric" autocomplete="off">
+      <input class="pd" id="p2" maxlength="1" type="password" inputmode="numeric" autocomplete="off">
+      <input class="pd" id="p3" maxlength="1" type="password" inputmode="numeric" autocomplete="off">
+    </div>
+    <button class="ebtn" id="enterBtn">Enter</button>
+    <div class="errmsg" id="errMsg"></div>
+    <div class="hint">Same PIN on all devices = instant sync<br>First time? Pick any 4 digits</div>
+  </div>
+</div>
+
+<div id="AS" style="display:none">
+  <div class="topbar">
+    <div class="tr1">
+      <h1>CAT 2026 <span>Tracker</span></h1>
+      <div class="streak" id="streakEl">🔥 0 streak</div>
+      <button class="synbtn" id="syncBtn">⟳</button>
+    </div>
+    <div class="pbar"><div class="pbar-f" id="pbarF" style="width:0%"></div></div>
+  </div>
+  <div class="sbar loading" id="sbarEl">Connecting...</div>
+  <div class="tabs">
+    <button class="tab active" id="t0">Today</button>
+    <button class="tab" id="t1">Full Plan</button>
+    <button class="tab" id="t2">Analysis</button>
+  </div>
+  <div class="main">
+    <div id="p0x"></div>
+    <div id="p1x" style="display:none"></div>
+    <div id="p2x" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+var SCH=[{"date": "2026-07-16", "label": "Jul 16 Thu", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Linear Equations", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Seating Arrangement", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-17", "label": "Jul 17 Fri", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Linear Equations -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Seating Arrangement", "text": "3 sets timed (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-18", "label": "Jul 18 Sat", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Quadratic Equations", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Seating Arrangement", "text": "3 sets + revisit Day 1 set from scratch"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-19", "label": "Jul 19 Sun", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Quadratic Equations", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Seating Arrangement -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-20", "label": "Jul 20 Mon", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Quadratic Equations", "text": "10 Previous Year CAT Qs (Cracku/2IIM) + update error log"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Seating Arrangement -- Correction", "text": "Review test mistakes -- redo wrong Qs, update error log"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-21", "label": "Jul 21 Tue", "type": "mock", "tasks": [{"id": "mock_exam", "section": "MOCK", "type": "check", "topic": "Full Length Mock", "text": "2 hr full exam -- Cracku DashCAT / CL"}, {"id": "mock_score", "section": "MOCK", "type": "test", "testParts": ["QA", "DILR", "VARC"], "topic": "Mock Score", "text": "Log your sectional score below"}, {"id": "mock_analysis", "section": "MOCK", "type": "check", "topic": "Mock Analysis", "text": "2 hrs -- note weak areas across all 3 sections"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-22", "label": "Jul 22 Wed", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Quadratic Equations -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Puzzles", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-23", "label": "Jul 23 Thu", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Inequalities", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Puzzles", "text": "3 sets timed (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-24", "label": "Jul 24 Fri", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Inequalities -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Puzzles", "text": "3 sets + revisit Day 1 set from scratch"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-25", "label": "Jul 25 Sat", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Functions & Graphs", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Puzzles -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-26", "label": "Jul 26 Sun", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Functions & Graphs", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Puzzles -- Correction", "text": "Review test mistakes -- redo wrong Qs, update error log"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-27", "label": "Jul 27 Mon", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Functions & Graphs -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Games & Tournaments", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-28", "label": "Jul 28 Tue", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Maxima-Minima", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Games & Tournaments", "text": "3 sets timed (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-29", "label": "Jul 29 Wed", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Maxima-Minima -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Games & Tournaments", "text": "3 sets + revisit Day 1 set from scratch"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-30", "label": "Jul 30 Thu", "type": "mock", "tasks": [{"id": "mock_exam", "section": "MOCK", "type": "check", "topic": "Full Length Mock", "text": "2 hr full exam -- Cracku DashCAT / CL"}, {"id": "mock_score", "section": "MOCK", "type": "test", "testParts": ["QA", "DILR", "VARC"], "topic": "Mock Score", "text": "Log your sectional score below"}, {"id": "mock_analysis", "section": "MOCK", "type": "check", "topic": "Mock Analysis", "text": "2 hrs -- note weak areas across all 3 sections"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-07-31", "label": "Jul 31 Fri", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Percentages", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Games & Tournaments -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-01", "label": "Aug 1 Sat", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Percentages", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Games & Tournaments -- Correction", "text": "Review test mistakes -- redo wrong Qs, update error log"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-02", "label": "Aug 2 Sun", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Percentages -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Venn Diagrams/Set Theory", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-03", "label": "Aug 3 Mon", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Profit, Loss & Discount", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Venn Diagrams/Set Theory", "text": "3 sets timed (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-04", "label": "Aug 4 Tue", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Profit, Loss & Discount", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Venn Diagrams/Set Theory -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-05", "label": "Aug 5 Wed", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Profit, Loss & Discount -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Venn Diagrams/Set Theory -- Correction", "text": "Review test mistakes -- redo wrong Qs, update error log"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-06", "label": "Aug 6 Thu", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "SI & CI", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Data Sufficiency (LR)", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-07", "label": "Aug 7 Fri", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "SI & CI", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Data Sufficiency (LR)", "text": "3 sets timed (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-08", "label": "Aug 8 Sat", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "SI & CI -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Data Sufficiency (LR) -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-09", "label": "Aug 9 Sun", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Ratio, Proportion & Variation", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Syllogisms", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-10", "label": "Aug 10 Mon", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Ratio, Proportion & Variation", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Syllogisms -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-11", "label": "Aug 11 Tue", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Ratio, Proportion & Variation -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Coding-Decoding", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-12", "label": "Aug 12 Wed", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Averages", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Coding-Decoding -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-13", "label": "Aug 13 Thu", "type": "mock", "tasks": [{"id": "mock_exam", "section": "MOCK", "type": "check", "topic": "Full Length Mock", "text": "2 hr full exam -- Cracku DashCAT / CL"}, {"id": "mock_score", "section": "MOCK", "type": "test", "testParts": ["QA", "DILR", "VARC"], "topic": "Mock Score", "text": "Log your sectional score below"}, {"id": "mock_analysis", "section": "MOCK", "type": "check", "topic": "Mock Analysis", "text": "2 hrs -- note weak areas across all 3 sections"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-14", "label": "Aug 14 Fri", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Averages", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Direction Sense", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-15", "label": "Aug 15 Sat", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Averages -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Direction Sense -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-16", "label": "Aug 16 Sun", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Mixtures & Alligations", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Routes & Network", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-17", "label": "Aug 17 Mon", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Mixtures & Alligations -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Routes & Network -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-18", "label": "Aug 18 Tue", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Time, Speed & Distance", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed/Combination Charts", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-19", "label": "Aug 19 Wed", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Time, Speed & Distance", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed/Combination Charts", "text": "3 sets timed (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-20", "label": "Aug 20 Thu", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Time, Speed & Distance -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed/Combination Charts", "text": "3 sets + revisit Day 1 set from scratch"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-21", "label": "Aug 21 Fri", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Time & Work", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Mixed/Combination Charts -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-22", "label": "Aug 22 Sat", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Time & Work", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed/Combination Charts -- Correction", "text": "Review test mistakes -- redo wrong Qs, update error log"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-23", "label": "Aug 23 Sun", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Time & Work -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Caselets", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-24", "label": "Aug 24 Mon", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Number System Basics", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Caselets", "text": "3 sets timed (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-25", "label": "Aug 25 Tue", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Number System Basics", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Caselets -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-26", "label": "Aug 26 Wed", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Number System Basics -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Caselets -- Correction", "text": "Review test mistakes -- redo wrong Qs, update error log"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-27", "label": "Aug 27 Thu", "type": "mock", "tasks": [{"id": "mock_exam", "section": "MOCK", "type": "check", "topic": "Full Length Mock", "text": "2 hr full exam -- Cracku DashCAT / CL"}, {"id": "mock_score", "section": "MOCK", "type": "test", "testParts": ["QA", "DILR", "VARC"], "topic": "Mock Score", "text": "Log your sectional score below"}, {"id": "mock_analysis", "section": "MOCK", "type": "check", "topic": "Mock Analysis", "text": "2 hrs -- note weak areas across all 3 sections"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-28", "label": "Aug 28 Fri", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Remainders", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Tables", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-29", "label": "Aug 29 Sat", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Remainders", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Tables", "text": "3 sets timed (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-30", "label": "Aug 30 Sun", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Remainders -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Tables -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-08-31", "label": "Aug 31 Mon", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Factorials", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Tables -- Correction", "text": "Review test mistakes -- redo wrong Qs, update error log"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-01", "label": "Sep 1 Tue", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Factorials -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Bar Graphs", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-02", "label": "Sep 2 Wed", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "HCF & LCM", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Bar Graphs", "text": "3 sets timed (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-03", "label": "Sep 3 Thu", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "HCF & LCM -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Bar Graphs -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-04", "label": "Sep 4 Fri", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Lines & Angles", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Line Graphs", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-05", "label": "Sep 5 Sat", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Lines & Angles -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Line Graphs", "text": "3 sets timed (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-06", "label": "Sep 6 Sun", "type": "mock", "tasks": [{"id": "mock_exam", "section": "MOCK", "type": "check", "topic": "Full Length Mock", "text": "2 hr full exam -- Cracku DashCAT / CL"}, {"id": "mock_score", "section": "MOCK", "type": "test", "testParts": ["QA", "DILR", "VARC"], "topic": "Mock Score", "text": "Log your sectional score below"}, {"id": "mock_analysis", "section": "MOCK", "type": "check", "topic": "Mock Analysis", "text": "2 hrs -- note weak areas across all 3 sections"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-07", "label": "Sep 7 Mon", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Triangles", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Line Graphs -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-08", "label": "Sep 8 Tue", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Triangles", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Data Sufficiency (DI)", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-09", "label": "Sep 9 Wed", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Triangles -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Data Sufficiency (DI)", "text": "3 sets timed (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-10", "label": "Sep 10 Thu", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Circles", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Data Sufficiency (DI) -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-11", "label": "Sep 11 Fri", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Circles", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Pie Charts", "text": "Concept video + 2 sets (Cracku)"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-12", "label": "Sep 12 Sat", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Circles", "text": "10 Previous Year CAT Qs (Cracku/2IIM) + update error log"}, {"id": "dilr", "section": "DILR", "type": "test", "topic": "Pie Charts -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-13", "label": "Sep 13 Sun", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Circles -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-14", "label": "Sep 14 Mon", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Permutation & Combination", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-15", "label": "Sep 15 Tue", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Permutation & Combination", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-16", "label": "Sep 16 Wed", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Permutation & Combination -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-17", "label": "Sep 17 Thu", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Probability", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-18", "label": "Sep 18 Fri", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Probability", "text": "10 easy + 15 moderate Qs (PW DPP / Cracku)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-19", "label": "Sep 19 Sat", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Probability -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-20", "label": "Sep 20 Sun", "type": "mock", "tasks": [{"id": "mock_exam", "section": "MOCK", "type": "check", "topic": "Full Length Mock", "text": "2 hr full exam -- Cracku DashCAT / CL"}, {"id": "mock_score", "section": "MOCK", "type": "test", "testParts": ["QA", "DILR", "VARC"], "topic": "Mock Score", "text": "Log your sectional score below"}, {"id": "mock_analysis", "section": "MOCK", "type": "check", "topic": "Mock Analysis", "text": "2 hrs -- note weak areas across all 3 sections"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-21", "label": "Sep 21 Mon", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Set Theory", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-22", "label": "Sep 22 Tue", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Set Theory -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-23", "label": "Sep 23 Wed", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "Sequences & Series", "text": "NCERT + PW lecture -- concept & examples (untimed)"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Odd One Out", "text": "2 RC passages + 1 editorial article + Odd One Out (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-24", "label": "Sep 24 Thu", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "test", "topic": "Sequences & Series -- TEST", "text": "Topic test (Cracku Study Room / Career Launcher) -- log score below"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-25", "label": "Sep 25 Fri", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "QA Full Revision", "text": "Revisit error log + weak topics, timed mixed practice"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Jumbles", "text": "2 RC passages + 1 editorial article + Para Jumbles (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-26", "label": "Sep 26 Sat", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "QA Full Revision", "text": "Revisit error log + weak topics, timed mixed practice"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-27", "label": "Sep 27 Sun", "type": "mock", "tasks": [{"id": "mock_exam", "section": "MOCK", "type": "check", "topic": "Full Length Mock", "text": "2 hr full exam -- Cracku DashCAT / CL"}, {"id": "mock_score", "section": "MOCK", "type": "test", "testParts": ["QA", "DILR", "VARC"], "topic": "Mock Score", "text": "Log your sectional score below"}, {"id": "mock_analysis", "section": "MOCK", "type": "check", "topic": "Mock Analysis", "text": "2 hrs -- note weak areas across all 3 sections"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-28", "label": "Sep 28 Mon", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "QA Full Revision", "text": "Revisit error log + weak topics, timed mixed practice"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Completion", "text": "2 RC passages + 1 editorial article + Para Completion (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-29", "label": "Sep 29 Tue", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "QA Full Revision", "text": "Revisit error log + weak topics, timed mixed practice"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary intro (5 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}, {"date": "2026-09-30", "label": "Sep 30 Wed", "type": "study", "tasks": [{"id": "qa", "section": "QA", "type": "check", "topic": "QA Full Revision", "text": "Revisit error log + weak topics, timed mixed practice"}, {"id": "dilr", "section": "DILR", "type": "check", "topic": "Mixed Full-Set DILR Practice", "text": "Full mixed DILR set -- 2-3 topics combined, timed"}, {"id": "varc", "section": "VARC", "type": "check", "topic": "RC + Para Summary", "text": "2 RC passages + 1 editorial article + Para Summary (10 Qs)"}, {"id": "vocab", "section": "VARC", "type": "vocab", "topic": "New Words", "text": "Type today's 2 new words (with meaning)"}]}];
+var FB_URL = 'https://cat-tracker-976ff-default-rtdb.firebaseio.com';
+var LD = {}, EX = {}, userPin = null, curTab = 0, syncTimer = null;
+
+// PIN setup
+var pEls = ['p0','p1','p2','p3'].map(function(id){ return document.getElementById(id); });
+
+pEls.forEach(function(el, i) {
+  el.addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g,'').slice(-1);
+    if (this.value && i < 3) pEls[i+1].focus();
+    if (i === 3 && this.value) login();
+  });
+  el.addEventListener('keydown', function(e) {
+    if (e.key==='Backspace' && !this.value && i>0) pEls[i-1].focus();
+    if (e.key==='Enter') login();
+  });
+});
+
+document.getElementById('enterBtn').addEventListener('click', login);
+document.getElementById('syncBtn').addEventListener('click', function(){ loadData(true); });
+document.getElementById('t0').addEventListener('click', function(){ switchTab(0); });
+document.getElementById('t1').addEventListener('click', function(){ switchTab(1); });
+document.getElementById('t2').addEventListener('click', function(){ switchTab(2); });
+
+// Auto-login
+var saved = localStorage.getItem('cat2026_pin');
+if (saved && saved.length===4) {
+  pEls.forEach(function(e,i){ e.value=saved[i]; });
+  setTimeout(login, 100);
+} else {
+  pEls[0].focus();
+}
+
+function login() {
+  var pin = pEls.map(function(e){ return e.value; }).join('');
+  if (pin.length!==4) { document.getElementById('errMsg').textContent='Enter all 4 digits'; return; }
+  userPin = pin;
+  localStorage.setItem('cat2026_pin', pin);
+  document.getElementById('LS').style.display = 'none';
+  document.getElementById('AS').style.display = 'block';
+  loadData(false);
+  // Poll every 10s for live sync
+  syncTimer = setInterval(function(){ loadData(false); }, 10000);
+}
+
+// Firebase REST API - no SDK needed
+function fbGet() {
+  return fetch(FB_URL + '/users/' + userPin + '/tasks.json')
+    .then(function(r){ return r.json(); });
+}
+function fbSet(key, val) {
+  var obj = {}; obj[key] = val;
+  return fetch(FB_URL + '/users/' + userPin + '/tasks.json', {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(obj)
+  });
+}
+// Extra store: vocab text + test scores (kept separate from the boolean tasks store)
+function fbGetExtra() {
+  return fetch(FB_URL + '/users/' + userPin + '/extra.json')
+    .then(function(r){ return r.json(); });
+}
+function fbSetExtra(key, val) {
+  var obj = {}; obj[key] = val;
+  return fetch(FB_URL + '/users/' + userPin + '/extra.json', {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(obj)
+  });
+}
+
+function loadData(showMsg) {
+  if(showMsg) setSbar('loading','Syncing...');
+  Promise.all([fbGet(), fbGetExtra()]).then(function(results) {
+    var prev = JSON.stringify(LD) + JSON.stringify(EX);
+    LD = results[0] || {};
+    EX = results[1] || {};
+    localStorage.setItem('cat_bk_'+userPin, JSON.stringify(LD));
+    localStorage.setItem('cat_ex_'+userPin, JSON.stringify(EX));
+    setSbar('ok','🟢 Synced — live across all devices');
+    if ((JSON.stringify(LD) + JSON.stringify(EX)) !== prev) { updateTop(); renderCur(); }
+    else { updateTop(); }
+  }).catch(function() {
+    setSbar('err','Offline — saved locally');
+    LD = JSON.parse(localStorage.getItem('cat_bk_'+userPin)||'{}');
+    EX = JSON.parse(localStorage.getItem('cat_ex_'+userPin)||'{}');
+    updateTop(); renderCur();
+  });
+}
+
+// Save a vocab/test value: local-first, background sync, no full re-render (keeps input focus)
+function saveExtra(key, val) {
+  EX[key] = val;
+  localStorage.setItem('cat_ex_'+userPin, JSON.stringify(EX));
+  fbSetExtra(key, val);
+  updateDayCard(key.split('_')[0]);
+  updateTop();
+}
+
+function isTaskDone(day, t) {
+  var key = day.date + '_' + t.id;
+  if (t.type === 'vocab') {
+    return !!(EX[key] && EX[key].trim().length > 0);
+  }
+  if (t.type === 'test') {
+    var raw = EX[key];
+    if (!raw) return false;
+    try { var o = JSON.parse(raw); } catch(e) { return false; }
+    if (t.testParts) return t.testParts.every(function(p){ return o[p] && Number(o[p].total) > 0; });
+    return o.total && Number(o.total) > 0;
+  }
+  return !!LD[key];
+}
+
+function accClass(pct) {
+  if (pct >= 75) return 'good';
+  if (pct >= 50) return 'mid';
+  return 'low';
+}
+
+function toggleTask(dt, id) {
+  var key = dt+'_'+id;
+  LD[key] = !LD[key];
+  localStorage.setItem('cat_bk_'+userPin, JSON.stringify(LD));
+  // Update UI immediately
+  var row = document.getElementById('r_'+key);
+  var ck = row ? row.querySelector('.ck') : null;
+  if(row) row.classList.toggle('done', !!LD[key]);
+  if(ck) ck.classList.toggle('on', !!LD[key]);
+  updateDayCard(dt);
+  updateTop();
+  if(curTab===0) renderToday();
+  if(curTab===2) renderAna();
+  // Save to Firebase
+  fbSet(key, LD[key]);
+}
+
+function setSbar(st,msg){ var e=document.getElementById('sbarEl'); e.textContent=msg; e.className='sbar '+st; }
+function getToday(){ return new Date().toISOString().split('T')[0]; }
+function getDC(day){
+  if(!day.tasks) return null;
+  var dn=day.tasks.filter(function(t){return isTaskDone(day,t);}).length;
+  return {done:dn,total:day.tasks.length,pct:Math.round(dn/day.tasks.length*100)};
+}
+
+function updateTop(){
+  var today=getToday(), streak=0, d=new Date(today);
+  while(true){
+    var iso=d.toISOString().split('T')[0];
+    var day=SCH.find(function(x){return x.date===iso;});
+    if(!day) break;
+    var c=getDC(day);
+    if(c&&c.pct===100){streak++;d.setDate(d.getDate()-1);}else break;
+  }
+  document.getElementById('streakEl').textContent='🔥 '+streak+' streak';
+  var tot=0,dn=0;
+  SCH.forEach(function(d){if(d.tasks){tot+=d.tasks.length;d.tasks.forEach(function(t){if(isTaskDone(d,t))dn++;});}});
+  document.getElementById('pbarF').style.width=(tot?Math.round(dn/tot*100):0)+'%';
+}
+
+function updateDayCard(dt){
+  var day=SCH.find(function(d){return d.date===dt;}); if(!day) return;
+  var c=getDC(day); if(!c) return;
+  var mb=document.getElementById('mb_'+dt), pp=document.getElementById('pp_'+dt), cd=document.getElementById('cd_'+dt);
+  if(mb) mb.style.width=c.pct+'%';
+  if(pp) pp.textContent=c.pct+'%';
+  if(cd) cd.classList.toggle('alldone',c.pct===100);
+}
+
+function renderToday(){
+  var today=getToday(), el=document.getElementById('p0x');
+  var day=SCH.find(function(d){return d.date===today;});
+  if(!day){el.innerHTML='<div style="padding:40px;text-align:center;color:var(--tx2)">No study day today!</div>';return;}
+  var c=getDC(day);
+  var pc=c.pct===100?'var(--ac2)':c.pct>0?'var(--ac3)':'var(--tx2)';
+  var h='<div class="today-hdr"><div><div style="font-size:13px;color:var(--tx2);margin-bottom:2px">'+day.label+'</div>';
+  h+='<div style="font-size:11px;color:var(--tx2)">'+c.done+' of '+c.total+' done</div>';
+  if(c.pct===100) h+='<div style="font-size:11px;color:var(--ac2);margin-top:3px">✓ Great work!</div>';
+  h+='</div><div class="today-pct" style="color:'+pc+'">'+c.pct+'%</div></div><div class="today-list">';
+  day.tasks.forEach(function(t){ h+=renderTaskRow(day,t,true); });
+  h+='</div>';
+  el.innerHTML=h;
+  wireTaskInputs(el);
+}
+
+function renderAll(){
+  var today=getToday(),h='',wdays=[],wn=0,ws='';
+  function flush(){
+    if(!wdays.length) return;
+    var sd=wdays.filter(function(d){return d.tasks;});
+    var dn=0,tot=0;
+    sd.forEach(function(d){tot+=d.tasks.length;d.tasks.forEach(function(t){if(LD[d.date+'_'+t.id])dn++;});});
+    var pct=tot?Math.round(dn/tot*100):0;
+    h+='<div class="wkhdr"><div class="wkln"></div><div class="wkl">Week '+wn+' · '+ws+'</div><div class="wksc">'+(tot?pct+'% done':'')+'</div><div class="wkln"></div></div>';
+    wdays.forEach(function(d){h+=renderCard(d,today);});
+    wdays=[];
+  }
+  SCH.forEach(function(day,i){
+    var dow=new Date(day.date+'T00:00:00').getDay();
+    if((dow===1||i===0)&&wdays.length){flush();wn++;ws=day.label.split(' ').slice(0,2).join(' ');}
+    if(wn===0){wn=1;ws=day.label.split(' ').slice(0,2).join(' ');}
+    wdays.push(day);
+  });
+  flush();
+  var el=document.getElementById('p1x'); el.innerHTML=h;
+  wireTaskInputs(el);
+  el.querySelectorAll('.dh').forEach(function(dh){
+    dh.addEventListener('click',function(){
+      var dt=this.dataset.dt;
+      var t=document.getElementById('tk_'+dt), c=document.getElementById('cv_'+dt);
+      if(t)t.classList.toggle('open'); if(c)c.classList.toggle('open');
+    });
+  });
+  setTimeout(function(){
+    var e=document.getElementById('cd_'+today);
+    if(e) e.scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
+}
+
+function readTestVal(day,t){
+  var key=day.date+'_'+t.id;
+  try{ return JSON.parse(EX[key]||'{}'); }catch(e){ return {}; }
+}
+
+function renderTaskRow(day,t,cardMode){
+  var key=day.date+'_'+t.id;
+  var wrap=cardMode?'tcard':'trow';
+  if(t.type==='vocab'){
+    var val=EX[key]||'';
+    var h='<div class="'+wrap+'" id="r_'+key+'">';
+    h+='<div class="tbody" style="width:100%"><span class="sec s'+t.section+'">'+t.section+'</span>';
+    h+='<span class="ttop">'+t.topic+'</span>';
+    h+='<input class="vinput" data-dt="'+day.date+'" data-id="'+t.id+'" placeholder="e.g. taciturn - reserved, says little" value="'+val.replace(/"/g,'&quot;')+'">';
+    h+='<span class="vsaved" id="vs_'+key+'">saved ✓</span></div></div>';
+    return h;
+  }
+  if(t.type==='test'){
+    var o=readTestVal(day,t);
+    var h='<div class="'+wrap+' test" id="r_'+key+'">';
+    h+='<div class="tbody" style="width:100%"><span class="sec s'+t.section+'">'+t.section+'</span>';
+    h+='<span class="ttop">'+t.topic+'</span><span class="tdesc">'+t.text+'</span>';
+    h+='<div class="testblk">';
+    var parts=t.testParts||[null];
+    parts.forEach(function(p){
+      var pv=p?(o[p]||{}):o;
+      var tot=pv.total||'', cor=pv.correct||'';
+      var pct=(tot&&cor!=='')?Math.round(cor/tot*100):null;
+      h+='<div class="tpart">';
+      if(p) h+='<span class="tplabel">'+p+'</span>';
+      h+='<span class="tplabel">Qs</span><input class="tnum" type="number" min="0" inputmode="numeric" data-dt="'+day.date+'" data-id="'+t.id+'" data-part="'+(p||'')+'" data-field="total" value="'+tot+'">';
+      h+='<span class="tplabel">Correct</span><input class="tnum" type="number" min="0" inputmode="numeric" data-dt="'+day.date+'" data-id="'+t.id+'" data-part="'+(p||'')+'" data-field="correct" value="'+cor+'">';
+      h+='<span class="tacc'+(pct!==null?' '+accClass(pct):'')+'">'+(pct!==null?pct+'%':'--')+'</span>';
+      h+='</div>';
+    });
+    h+='</div></div></div>';
+    return h;
+  }
+  var chk=!!LD[key];
+  var h='<div class="'+wrap+(chk?' done':'')+'" id="r_'+key+'">';
+  h+='<div class="ck'+(chk?' on':'')+'" data-dt="'+day.date+'" data-id="'+t.id+'"></div>';
+  h+='<div class="tbody"><span class="sec s'+t.section+'">'+t.section+'</span>';
+  h+='<span class="ttop">'+t.topic+'</span><span class="tdesc">'+t.text+'</span></div></div>';
+  return h;
+}
+
+function wireTaskInputs(root){
+  root.querySelectorAll('.ck').forEach(function(ck){
+    ck.addEventListener('click',function(){toggleTask(this.dataset.dt,this.dataset.id);});
+  });
+  root.querySelectorAll('.vinput').forEach(function(inp){
+    var t; inp.addEventListener('input',function(){
+      var dt=this.dataset.dt,id=this.dataset.id,el=this;
+      clearTimeout(t); t=setTimeout(function(){
+        saveExtra(dt+'_'+id, el.value);
+        var vs=document.getElementById('vs_'+dt+'_'+id);
+        if(vs){vs.classList.add('show');setTimeout(function(){vs.classList.remove('show');},1200);}
+        if(curTab===2) renderAna();
+      },500);
+    });
+  });
+  root.querySelectorAll('.tnum').forEach(function(inp){
+    inp.addEventListener('input',function(){
+      var dt=this.dataset.dt,id=this.dataset.id,part=this.dataset.part,field=this.dataset.field;
+      var key=dt+'_'+id;
+      var o; try{o=JSON.parse(EX[key]||'{}');}catch(e){o={};}
+      if(part){ o[part]=o[part]||{}; o[part][field]=this.value; }
+      else{ o[field]=this.value; }
+      saveExtra(key, JSON.stringify(o));
+      // live accuracy update in this row
+      var row=this.closest('.tpart');
+      var totInp=row.querySelector('[data-field="total"]'), corInp=row.querySelector('[data-field="correct"]');
+      var tot=parseFloat(totInp.value), cor=parseFloat(corInp.value);
+      var accEl=row.querySelector('.tacc');
+      if(tot>0 && cor>=0){ var pct=Math.round(cor/tot*100); accEl.textContent=pct+'%'; accEl.className='tacc '+accClass(pct); }
+      else { accEl.textContent='--'; accEl.className='tacc'; }
+      if(curTab===2) renderAna();
+    });
+  });
+}
+
+function renderCard(day,today){
+  var isT=day.date===today;
+  var c=getDC(day), pct=c?c.pct:0;
+  var cls='dc'+(isT?' tod':'')+(c&&c.pct===100?' alldone':'')+(day.type==='mock'?' mockday':'');
+  var isOpen=isT;
+  var th='<div class="tasks'+(isOpen?' open':'')+'" id="tk_'+day.date+'">';
+  (day.tasks||[]).forEach(function(t){ th+=renderTaskRow(day,t); });
+  th+='</div>';
+  var h='<div class="'+cls+'" id="cd_'+day.date+'">';
+  h+='<div class="dh" data-dt="'+day.date+'">';
+  h+='<div class="ddate'+(isT?' tl':'')+'">';
+  h+=day.label+(isT?'<span class="tbadge">TODAY</span>':'');
+  h+='</div><div class="dprog"><div class="mbar"><div class="mbarf" id="mb_'+day.date+'" style="width:'+pct+'%"></div></div>';
+  h+='<div class="dpct" id="pp_'+day.date+'">'+(c?pct+'%':(day.type==='mock'?'📝':''))+'</div></div>';
+  h+='<div class="chv'+(isOpen?' open':'')+'" id="cv_'+day.date+'">▾</div></div>';
+  h+=th+'</div>';
+  return h;
+}
+
+function renderTestScoreSummary(){
+  var entries=[];
+  SCH.forEach(function(day){
+    (day.tasks||[]).forEach(function(t){
+      if(t.type!=='test') return;
+      if(!isTaskDone(day,t)) return;
+      var o=readTestVal(day,t);
+      if(t.testParts){
+        var totSum=0,corSum=0,bits=[];
+        t.testParts.forEach(function(p){
+          var pv=o[p]||{}; var tt=Number(pv.total)||0, cc=Number(pv.correct)||0;
+          totSum+=tt; corSum+=cc;
+          bits.push(p+' '+(tt?Math.round(cc/tt*100):0)+'%');
+        });
+        var pct=totSum?Math.round(corSum/totSum*100):0;
+        entries.push({date:day.date,label:day.label,topic:t.topic,section:t.section,pct:pct,detail:bits.join(' · ')});
+      } else {
+        var tt=Number(o.total)||0, cc=Number(o.correct)||0;
+        var pct=tt?Math.round(cc/tt*100):0;
+        entries.push({date:day.date,label:day.label,topic:t.topic,section:t.section,pct:pct,detail:cc+'/'+tt+' correct'});
+      }
+    });
+  });
+  if(!entries.length) return '';
+  entries.sort(function(a,b){return a.date<b.date?1:-1;});
+  var avgFor=function(sec){var l=entries.filter(function(e){return e.section===sec;});if(!l.length)return null;return Math.round(l.reduce(function(s,e){return s+e.pct;},0)/l.length);};
+  var aQA=avgFor('QA'),aDILR=avgFor('DILR'),aMOCK=avgFor('MOCK');
+  var avgH='<div class="stats">';
+  if(aQA!==null) avgH+='<div class="stb"><div class="stv">'+aQA+'%</div><div class="stl">QA Test Avg</div></div>';
+  if(aDILR!==null) avgH+='<div class="stb"><div class="stv">'+aDILR+'%</div><div class="stl">DILR Test Avg</div></div>';
+  if(aMOCK!==null) avgH+='<div class="stb"><div class="stv">'+aMOCK+'%</div><div class="stl">Mock Avg</div></div>';
+  avgH+='<div class="stb"><div class="stv">'+entries.length+'</div><div class="stl">Tests Logged</div></div></div>';
+  var listH='<div class="testlog">';
+  entries.slice(0,20).forEach(function(e){
+    listH+='<div class="tlrow"><div class="tldate">'+e.label.split(' ').slice(0,2).join(' ')+'</div><div class="tltopic">'+e.topic+'<div style="color:var(--tx2);font-size:10px">'+e.detail+'</div></div><div class="tlacc '+accClass(e.pct)+'">'+e.pct+'%</div></div>';
+  });
+  listH+='</div>';
+  return '<div class="awh2">Test Scores</div>'+avgH+listH;
+}
+
+function renderVocabLog(){
+  var entries=[];
+  SCH.forEach(function(day){
+    (day.tasks||[]).forEach(function(t){
+      if(t.type!=='vocab') return;
+      var v=EX[day.date+'_'+t.id];
+      if(v && v.trim()) entries.push({date:day.date,label:day.label,words:v.trim()});
+    });
+  });
+  if(!entries.length) return '<div class="awh2">Vocabulary</div><div class="emptymsg">No words logged yet — add them from the Today tab</div>';
+  entries.sort(function(a,b){return a.date<b.date?1:-1;});
+  var h='<div class="awh2">Vocabulary · '+entries.length+' days logged</div><div class="vocablog">';
+  entries.slice(0,25).forEach(function(e){
+    h+='<div class="vlword"><b>'+e.label.split(' ').slice(0,2).join(' ')+':</b> '+e.words+'</div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+function renderAna(){
+  var today=getToday();
+  var sd=SCH.filter(function(d){return d.tasks&&d.date<=today;});
+  var tot=0,dn=0,fd=0;
+  sd.forEach(function(d){tot+=d.tasks.length;var x=0;d.tasks.forEach(function(t){if(isTaskDone(d,t)){dn++;x++;}});if(x===d.tasks.length)fd++;});
+  var pct=tot?Math.round(dn/tot*100):0;
+  var streak=0,d=new Date(today);
+  while(true){var iso=d.toISOString().split('T')[0];var day=SCH.find(function(x){return x.date===iso;});if(!day)break;var c=getDC(day);if(c&&c.pct===100){streak++;d.setDate(d.getDate()-1);}else break;}
+  var h='<div class="stats"><div class="stb"><div class="stv">'+pct+'%</div><div class="stl">Overall</div></div><div class="stb"><div class="stv">'+streak+'</div><div class="stl">🔥 Streak</div></div><div class="stb"><div class="stv">'+fd+'</div><div class="stl">Full Days</div></div><div class="stb"><div class="stv">'+sd.length+'</div><div class="stl">Days Past</div></div></div>';
+  h+=renderTestScoreSummary();
+  h+=renderVocabLog();
+  var weeks=[],wk=[],ws='';
+  SCH.forEach(function(day,i){var dow=new Date(day.date+'T00:00:00').getDay();if((dow===1||i===0)&&wk.length){weeks.push({days:wk,label:ws});wk=[];}if(dow===1||i===0)ws=day.label.split(' ').slice(0,2).join(' ');wk.push(day);});
+  if(wk.length)weeks.push({days:wk,label:ws});
+  weeks.forEach(function(week,wi){
+    var wsd=week.days.filter(function(d){return d.tasks;});
+    var wd=0,wt=0;
+    wsd.forEach(function(d){wt+=d.tasks.length;d.tasks.forEach(function(t){if(isTaskDone(d,t))wd++;});});
+    var wp=wt?Math.round(wd/wt*100):0;
+    var sc=wp>=80?'sg':wp>=50?'so':'sb';
+    var af=wsd.every(function(d){return d.date>today;});
+    var dh='';
+    week.days.forEach(function(day){
+      var dname=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(day.date+'T00:00:00').getDay()];
+      var dc,dt2;
+      if(day.date>today){dc='dfu';dt2='—';}
+      else{var c=getDC(day);if(!c){dc='dfu';dt2='—';}else if(c.pct===100){dc='df';dt2='✓';}else if(c.pct>0){dc='dp2';dt2=c.pct+'%';}else{dc='dn2';dt2='✗';}}
+      dh+='<div class="add"><div class="adl">'+dname+'</div><div class="adc '+dc+'">'+dt2+'</div></div>';
+    });
+    var secs={QA:{d:0,t:0},VARC:{d:0,t:0},DILR:{d:0,t:0},MOCK:{d:0,t:0}};
+    wsd.forEach(function(day){(day.tasks||[]).forEach(function(t){if(secs[t.section]){secs[t.section].t++;if(isTaskDone(day,t))secs[t.section].d++;}});});
+    var sh='';
+    Object.keys(secs).forEach(function(sec){var v=secs[sec];if(!v.t)return;sh+='<div class="awsec"><div class="awsl">'+sec+'</div><div class="awsv">'+Math.round(v.d/v.t*100)+'%</div></div>';});
+    h+='<div class="aw"><div class="awh"><div class="awt">Week '+(wi+1)+' · '+week.label+'</div>'+(af?'<div style="font-size:11px;color:var(--tx2)">upcoming</div>':'<div class="awsc '+sc+'">'+wp+'%</div>')+'</div><div class="awg">'+dh+'</div>'+(sh?'<div class="awsecs">'+sh+'</div>':'')+'</div>';
+  });
+  document.getElementById('p2x').innerHTML=h;
+}
+
+function switchTab(n){
+  curTab=n;
+  ['p0x','p1x','p2x'].forEach(function(id,i){document.getElementById(id).style.display=i===n?'':'none';});
+  ['t0','t1','t2'].forEach(function(id,i){document.getElementById(id).classList.toggle('active',i===n);});
+  renderCur();
+}
+function renderCur(){if(curTab===0)renderToday();else if(curTab===1)renderAll();else renderAna();}
+
+// PWA install
+var dp;
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();dp=e;
+  setTimeout(function(){
+    if(dp&&document.getElementById('AS').style.display!=='none'){
+      var b=document.createElement('div');
+      b.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1a1a22;border-top:1px solid #7c6af7;padding:12px 16px;display:flex;align-items:center;gap:12px;';
+      b.innerHTML='<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#e8e6f0">Install as App</div><div style="font-size:11px;color:#9896a8">No browser bar</div></div>';
+      var ib=document.createElement('button');
+      ib.textContent='Install';ib.style.cssText='background:#7c6af7;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;';
+      ib.addEventListener('click',function(){dp.prompt();dp.userChoice.then(function(){dp=null;b.remove();});});
+      var cb=document.createElement('button');
+      cb.textContent='✕';cb.style.cssText='background:none;border:none;color:#9896a8;font-size:20px;cursor:pointer;';
+      cb.addEventListener('click',function(){b.remove();});
+      b.appendChild(ib);b.appendChild(cb);document.body.appendChild(b);
+    }
+  },3000);
+});
+
+// Service Worker - required for PWA install
+if ('serviceWorker' in navigator) {
+  var swCode = `
+    self.addEventListener('install', function(e) { self.skipWaiting(); });
+    self.addEventListener('activate', function(e) { e.waitUntil(clients.claim()); });
+    self.addEventListener('fetch', function(e) {
+      e.respondWith(fetch(e.request).catch(function() {
+        return caches.match(e.request);
+      }));
+    });
+  `;
+  var blob = new Blob([swCode], {type: 'application/javascript'});
+  var swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).then(function(reg) {
+    console.log('SW registered');
+  }).catch(function(e) { console.log('SW error', e); });
+}
+
+</script>
+</body>
+</html>
